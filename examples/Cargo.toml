@@ -95,6 +95,10 @@ name = "select"
 path = "select.rs"
 
 [[example]]
+name = "select_tabular"
+path = "select_tabular.rs"
+
+[[example]]
 name = "complex_autocompletion"
 path = "complex_autocompletion.rs"
 

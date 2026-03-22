@@ -314,6 +314,34 @@ Like all others, this prompt also allows you to customize several aspects of it:
 - **Page size**: Number of options displayed at once, 7 by default.
 - **Display option indexes**: On long lists, it might be helpful to display the indexes of the options to the user. Via the `RenderConfig`, you can set the display mode of the indexes as a prefix of an option. The default configuration is `None`, to not render any index when displaying the options.
 - **Scoring function**: Function that defines the order of options and if an option is displayed or not based on the current user input.
+- **Tabular columns**: Optional column configurations for displaying options with aligned columns. Perfect for showing structured data like server listings, package metadata, or any data with multiple fields.
+
+### Tabular Formatting
+
+`Select` supports the same tabular formatting as `MultiSelect`. When displaying options with multiple data fields, you can enable column alignment for better readability:
+
+```rust
+use inquire::{Select, tabular::{ColumnConfig, ColumnAlignment}};
+
+let servers = vec![
+    "web-server-01: 192.168.1.10, 8080, Running",
+    "api-gateway: 192.168.1.20, 3000, Running",
+    "db-primary: 192.168.1.30, 5432, Stopped",
+];
+
+let columns = vec![
+    ColumnConfig::new_with_separator(": ", ColumnAlignment::Left),  // Server name
+    ColumnConfig::new_with_separator(", ", ColumnAlignment::Right), // IP
+    ColumnConfig::new_with_separator(", ", ColumnAlignment::Right), // Port
+    ColumnConfig::new(ColumnAlignment::Left),                       // Status
+];
+
+let ans = Select::new("Connect to server:", servers)
+    .with_tabular_columns(columns)
+    .prompt()?;
+```
+
+**Example:** [select_tabular.rs](./examples/select_tabular.rs)
 
 ### Derive Macro for Enums
 
@@ -376,7 +404,7 @@ Customizable options:
 
 ### Tabular Formatting
 
-When displaying options with multiple data fields (such as name, size, date, and path), you can enable tabular formatting to align columns for better readability:
+Both `Select` and `MultiSelect` support tabular formatting. When displaying options with multiple data fields (such as name, size, date, and path), you can enable it to align columns for better readability:
 
 ```rust
 use inquire::{MultiSelect, tabular::{ColumnConfig, ColumnAlignment}};
@@ -435,7 +463,8 @@ let col = ColumnConfig::new(ColumnAlignment::Left)
 ```
 
 **Examples:**
-- [multiselect_tabular.rs](./examples/multiselect_tabular.rs) - Basic tabular formatting
+- [select_tabular.rs](./examples/select_tabular.rs) - Tabular formatting for `Select`
+- [multiselect_tabular.rs](./examples/multiselect_tabular.rs) - Tabular formatting for `MultiSelect`
 - [multiselect_tabular_separators.rs](./examples/multiselect_tabular_separators.rs) - Demonstrates default vs custom separators
 
 ### Derive Macro for Enums

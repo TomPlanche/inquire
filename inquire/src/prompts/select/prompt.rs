@@ -6,6 +6,7 @@ use crate::{
     input::{Input, InputActionResult},
     list_option::ListOption,
     prompts::prompt::{ActionResult, Prompt},
+    tabular::{format_as_table, ColumnConfig},
     type_aliases::{Scorer, Sorter},
     ui::SelectBackend,
     utils::paginate,
@@ -13,6 +14,17 @@ use crate::{
 };
 
 use super::{action::SelectPromptAction, config::SelectConfig};
+
+/// Wrapper for displaying formatted strings in place of original values
+struct FormattedDisplay<'a> {
+    formatted: &'a str,
+}
+
+impl<'a> Display for FormattedDisplay<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.formatted)
+    }
+}
 
 pub struct SelectPrompt<'a, T> {
     message: &'a str,
@@ -26,6 +38,8 @@ pub struct SelectPrompt<'a, T> {
     scorer: Scorer<'a, T>,
     sorter: Sorter<'a>,
     formatter: OptionFormatter<'a, T>,
+    tabular_columns: Option<Vec<ColumnConfig>>,
+    formatted_options: Option<Vec<String>>,
 }
 
 impl<'a, T> SelectPrompt<'a, T>
@@ -69,6 +83,8 @@ where
             scorer: so.scorer,
             sorter: so.sorter,
             formatter: so.formatter,
+            tabular_columns: so.tabular_columns,
+            formatted_options: None,
         })
     }
 
@@ -124,6 +140,19 @@ where
         ListOption::new(index, value)
     }
 
+    fn update_formatted_options(&mut self) {
+        if let Some(columns) = &self.tabular_columns {
+            let visible_strings: Vec<String> = self
+                .scored_options
+                .iter()
+                .filter_map(|&idx| self.string_options.get(idx).cloned())
+                .collect();
+
+            let formatted = format_as_table(&visible_strings, columns);
+            self.formatted_options = Some(formatted);
+        }
+    }
+
     fn run_scorer(&mut self) {
         let content = match &self.input {
             Some(input) => input.content(),
@@ -149,6 +178,9 @@ where
         }
 
         self.scored_options = new_scored_options;
+
+        // Update formatted options if tabular formatting is enabled
+        self.update_formatted_options();
 
         if self.config.reset_cursor {
             let _ = self.update_cursor_position(0);
@@ -181,6 +213,7 @@ where
 
     fn setup(&mut self) -> InquireResult<()> {
         self.run_scorer();
+        self.update_formatted_options();
         Ok(())
     }
 
@@ -224,16 +257,40 @@ where
 
         backend.render_select_prompt(prompt, self.input.as_ref())?;
 
-        let choices = self
-            .scored_options
-            .iter()
-            .cloned()
-            .map(|i| ListOption::new(i, self.options.get(i).unwrap()))
-            .collect::<Vec<ListOption<&T>>>();
+        if let Some(formatted) = &self.formatted_options {
+            let formatted_choices: Vec<ListOption<FormattedDisplay<'_>>> = self
+                .scored_options
+                .iter()
+                .enumerate()
+                .filter_map(|(rel_idx, &orig_idx)| {
+                    formatted.get(rel_idx).map(|formatted_str| {
+                        ListOption::new(
+                            orig_idx,
+                            FormattedDisplay {
+                                formatted: formatted_str.as_str(),
+                            },
+                        )
+                    })
+                })
+                .collect();
 
-        let page = paginate(self.config.page_size, &choices, Some(self.cursor_index));
+            let page = paginate(
+                self.config.page_size,
+                &formatted_choices,
+                Some(self.cursor_index),
+            );
+            backend.render_options(page)?;
+        } else {
+            let choices = self
+                .scored_options
+                .iter()
+                .cloned()
+                .map(|i| ListOption::new(i, self.options.get(i).unwrap()))
+                .collect::<Vec<ListOption<&T>>>();
 
-        backend.render_options(page)?;
+            let page = paginate(self.config.page_size, &choices, Some(self.cursor_index));
+            backend.render_options(page)?;
+        }
 
         if let Some(help_message) = self.help_message {
             backend.render_help_message(help_message)?;
