@@ -12,6 +12,25 @@
   - Perfect for displaying structured data like file listings, project metadata, or any multi-field information.
   - See [multiselect_tabular.rs](./examples/multiselect_tabular.rs) and [multiselect_tabular_separators.rs](./examples/multiselect_tabular_separators.rs) examples.
 
+## [0.9.4] - 2026-02-24
+
+### Features
+
+Experimental: Added multi-line input support for `Password` and `Text` prompts via `Alt+Enter`. Enable the `experimental-multiline-input` feature to use it. It is only supported when using `crossterm` (default) as the terminal back-end.
+
+## [0.9.3] - 2026-02-06
+
+### Features
+
+- Added `new_line_prefix` option to `RenderConfig`, allowing a styled prefix to be displayed at the beginning of every new line.
+- Added `answer_from_new_line` option to `RenderConfig`, allowing the submitted answer to be rendered on a new line below the prompt.
+- Added `unhighlighted_option_prefix` option to `RenderConfig`, allowing customization of the prefix for non-highlighted options in Select and MultiSelect prompts.
+
+## [0.9.2] - 2026-01-17
+
+- Bumped MSRV from 1.80 -> 1.82 due to new requirements of dependencies.
+- Expose the sorting function used by `Select` (thanks @devjgm!)
+
 ## [0.9.1] - 2025-09-16
 
 ### Fixes
@@ -388,7 +407,10 @@ The library is already featureful enough to warrant a higher version number, bum
 
 <!-- next-url -->
 
-[unreleased]: https://github.com/mikaelmello/inquire/compare/v0.9.1...HEAD
+[unreleased]: https://github.com/mikaelmello/inquire/compare/v0.9.4...HEAD
+[0.9.4]: https://github.com/mikaelmello/inquire/compare/v0.9.3...v0.9.4
+[0.9.3]: https://github.com/mikaelmello/inquire/compare/v0.9.2...v0.9.3
+[0.9.2]: https://github.com/mikaelmello/inquire/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/mikaelmello/inquire/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/mikaelmello/inquire/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mikaelmello/inquire/compare/v0.7.5...v0.8.0

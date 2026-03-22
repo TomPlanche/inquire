@@ -1,6 +1,6 @@
 [package]
 name = "inquire"
-version = "0.9.1"
+version = "0.9.4"
 description = "inquire is a library for building interactive prompts on terminals"
 repository = "https://github.com/mikaelmello/inquire"
 license = "MIT"
@@ -26,6 +26,7 @@ one-liners = []
 date = ["chrono"]
 editor = ["tempfile"]
 fuzzy = ["fuzzy-matcher"]
+experimental-multiline-input = []
 
 [package.metadata.docs.rs]
 all-features = true
